@@ -10,6 +10,10 @@
 import 'react-native-get-random-values';
 import 'react-native-url-polyfill/auto';
 import { Buffer } from 'buffer';
+import { sha512 } from '@noble/hashes/sha2.js';
+import * as ed from '@noble/ed25519';
+ed.utils.sha512 = sha512;
+ed.utils.sha512Async = (m) => Promise.resolve(sha512(m));
 
 // Make Buffer and other globals available
 global.Buffer = global.Buffer || Buffer;

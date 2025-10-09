@@ -1,0 +1,16 @@
+diff --git a/dist/utils/keys-utils.js b/dist/utils/keys-utils.js
+index c6e9acafd3d9322252c6a3280f0f4d64d56b6319..653041af3b2fac29aff3a78e18729729e0589cbe 100644
+--- a/dist/utils/keys-utils.js
++++ b/dist/utils/keys-utils.js
+@@ -7,6 +7,11 @@ const poseidon_1 = require("./poseidon");
+ const bytes_1 = require("./bytes");
+ const hash_1 = require("./hash");
+ const scalar_multiply_1 = require("./scalar-multiply");
++const hashes = require('@noble/hashes/sha2.js');
++
++ed25519_1.utils.sha512 = hashes.sha512;
++ed25519_1.utils.sha512Async = (m) => Promise.resolve(hashes.sha512(m));
++
+ const { bytesToHex, randomBytes } = ed25519_1.utils;
+ function getPublicSpendingKey(privateKey) {
+     if (privateKey.length !== 32)

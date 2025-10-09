@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  dop-engine-v3:
+    hash: d1a84f986792a3bfdcd4eae3cc78f887f798f326c534430eec7a80d6a4a42894
+    path: patches/dop-engine-v3.patch
+
 importers:
 
   .:
@@ -12,8 +17,11 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1
       '@noble/ed25519':
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: 1.7.1
+        version: 1.7.1
+      '@noble/hashes':
+        specifier: ^2.0.1
+        version: 2.0.1
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
         version: 2.2.0(react-native@0.81.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10))(@react-native/metro-config@0.81.4(@babel/core@7.28.4)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.2.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))
@@ -1422,11 +1430,8 @@ packages:
     resolution: {integrity: sha512-7YDlXiNMdO1YZeH6t/kvopHHbIZzlxrCV9WLqCY6QhcXOoXiNCMDqJIglZ9Yjx5+w7Dz30TITFrlTjnRg7sKEg==}
     engines: {node: ^14.21.3 || >=16}
 
-  '@noble/ed25519@1.7.5':
-    resolution: {integrity: sha512-xuS0nwRMQBvSxDa7UxMb61xTiH3MxTgUfhyPUALVIe0FlOAz4sjELwyDRyUvqeEYfRSG9qNjFIycqLZppg4RSA==}
-
-  '@noble/ed25519@3.0.0':
-    resolution: {integrity: sha512-QyteqMNm0GLqfa5SoYbSC3+Pvykwpn95Zgth4MFVSMKBB75ELl9tX1LAVsN4c3HXOrakHsF2gL4zWDAYCcsnzg==}
+  '@noble/ed25519@1.7.1':
+    resolution: {integrity: sha512-Rk4SkJFaXZiznFyC/t77Q0NKS4FL7TLJJsVG2V2oiEq3kJVeTdxysEe/yRWSpnWMe808XRDJ+VFh5pt/FN5plw==}
 
   '@noble/hashes@1.3.2':
     resolution: {integrity: sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==}
@@ -1439,6 +1444,10 @@ packages:
   '@noble/hashes@1.8.0':
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
     engines: {node: ^14.21.3 || >=16}
+
+  '@noble/hashes@2.0.1':
+    resolution: {integrity: sha512-XlOlEbQcE9fmuXxrVTXCTlG2nlRXa9Rj3rr5Ue/+tX+nmkgbX720YHh0VR3hBF9xDvwnb8D2shVGOwNx+ulArw==}
+    engines: {node: '>= 20.19.0'}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -1899,6 +1908,15 @@ packages:
 
   '@whatwg-node/server@0.7.7':
     resolution: {integrity: sha512-aHURgNDFm/48WVV3vhTMfnEKCYwYgdaRdRhZsQZx4UVFjGGkGay7Ys0+AYu9QT/jpoImv2oONkstoTMUprDofg==}
+
+  '@zk-kit/baby-jubjub@1.0.3':
+    resolution: {integrity: sha512-Wl+QfV6XGOMk1yU2JTqHXeKWfJVXp83is0+dtqfj9wx4wsAPpb+qzYvwAxW5PBx5/Nu71Bh7jp/5vM+6QgHSwA==}
+
+  '@zk-kit/eddsa-poseidon@1.1.0':
+    resolution: {integrity: sha512-Djc+zOZjd73FpLLf32/XeVZi8GX4ShPQJGS4Iig1QMAR/2CggEi++6Jrkr9N2FM3M4MRCH1qxz2u22DjOLtASg==}
+
+  '@zk-kit/utils@1.2.1':
+    resolution: {integrity: sha512-H2nTsyWdicVOyvqC5AjgU7tsTgmR6PDrruFJNmlmdhKp7RxEia/E1B1swMZjaasYa2QMp4Zc6oB7cWchty7B2Q==}
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -2729,7 +2747,11 @@ packages:
   dop-wallet-v6@file:../new-dop-wallet-v3:
     resolution: {directory: ../new-dop-wallet-v3, type: directory}
     peerDependencies:
+      '@iden3/react-native-rapidsnark': ^0.0.1-beta.1
       '@react-native-async-storage/async-storage': ^1.24.0
+    peerDependenciesMeta:
+      '@iden3/react-native-rapidsnark':
+        optional: true
 
   dset@3.1.2:
     resolution: {integrity: sha512-g/M9sqy3oHe477Ar4voQxWtaPIFw1jTdKZuomOjhCcBx9nHUNn0pu6NopuFFrTh/TRZIKEj+76vLWFu9BNKk+Q==}
@@ -4500,6 +4522,9 @@ packages:
   pkg-dir@4.2.0:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
+
+  poseidon-lite@0.3.0:
+    resolution: {integrity: sha512-ilJj4MIve4uBEG7SrtPqUUNkvpJ/pLVbndxa0WvebcQqeIhe+h72JR4g0EvwchUzm9sOQDlOjiDNmRAgxNZl4A==}
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -7478,15 +7503,15 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
 
-  '@noble/ed25519@1.7.5': {}
-
-  '@noble/ed25519@3.0.0': {}
+  '@noble/ed25519@1.7.1': {}
 
   '@noble/hashes@1.3.2': {}
 
   '@noble/hashes@1.4.0': {}
 
   '@noble/hashes@1.8.0': {}
+
+  '@noble/hashes@2.0.1': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -8239,6 +8264,22 @@ snapshots:
     dependencies:
       '@whatwg-node/fetch': 0.8.8
       tslib: 2.8.1
+
+  '@zk-kit/baby-jubjub@1.0.3':
+    dependencies:
+      '@zk-kit/utils': 1.2.1
+
+  '@zk-kit/eddsa-poseidon@1.1.0':
+    dependencies:
+      '@zk-kit/baby-jubjub': 1.0.3
+      '@zk-kit/utils': 1.2.1
+      blakejs: 1.2.1
+      buffer: 6.0.3
+      poseidon-lite: 0.3.0
+
+  '@zk-kit/utils@1.2.1':
+    dependencies:
+      buffer: 6.0.3
 
   abort-controller@3.0.0:
     dependencies:
@@ -9221,10 +9262,10 @@ snapshots:
 
   dop-curve25519-scalarmult-wasm@1.0.3: {}
 
-  dop-engine-v3@1.4.9(bufferutil@4.0.9)(chai@5.3.3)(utf-8-validate@5.0.10):
+  dop-engine-v3@1.4.9(patch_hash=d1a84f986792a3bfdcd4eae3cc78f887f798f326c534430eec7a80d6a4a42894)(bufferutil@4.0.9)(chai@5.3.3)(utf-8-validate@5.0.10):
     dependencies:
       '@noble/ciphers': 0.4.1
-      '@noble/ed25519': 1.7.5
+      '@noble/ed25519': 1.7.1
       '@noble/hashes': 1.8.0
       '@railgun-community/poseidon-hash-wasm': 1.0.1
       '@scure/base': 1.2.6
@@ -9263,22 +9304,24 @@ snapshots:
       '@graphql-mesh/store': 0.9.20(@graphql-mesh/cross-helpers@0.3.4(@graphql-tools/utils@10.9.1(graphql@16.11.0))(graphql@16.11.0)(react-native@0.81.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10))(@react-native/metro-config@0.81.4(@babel/core@7.28.4)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.2.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)))(@graphql-mesh/types@0.91.15)(@graphql-mesh/utils@0.43.23)(@graphql-tools/utils@10.9.1(graphql@16.11.0))(graphql@16.11.0)(tslib@2.8.1)
       '@graphql-mesh/types': 0.91.15(@graphql-mesh/store@0.9.20)(@graphql-tools/utils@10.9.1(graphql@16.11.0))(graphql@16.11.0)(tslib@2.8.1)
       '@graphql-mesh/utils': 0.43.23(@graphql-mesh/cross-helpers@0.3.4(@graphql-tools/utils@10.9.1(graphql@16.11.0))(graphql@16.11.0)(react-native@0.81.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10))(@react-native/metro-config@0.81.4(@babel/core@7.28.4)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.2.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)))(@graphql-mesh/types@0.91.15)(@graphql-tools/utils@10.9.1(graphql@16.11.0))(graphql@16.11.0)(tslib@2.8.1)
-      '@noble/ed25519': 1.7.5
+      '@noble/ed25519': 1.7.1
       '@react-native-async-storage/async-storage': 2.2.0(react-native@0.81.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10))(@react-native/metro-config@0.81.4(@babel/core@7.28.4)(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@types/react@19.2.0)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))
       '@whatwg-node/fetch': 0.8.8
+      '@zk-kit/eddsa-poseidon': 1.1.0
       assert: 2.0.0
       axios: 1.7.2
       brotli: 1.3.3
       buffer: 6.0.3
       circomlibjs: 0.1.7(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       crypto-browserify: 3.12.0
-      dop-engine-v3: 1.4.9(bufferutil@4.0.9)(chai@5.3.3)(utf-8-validate@5.0.10)
+      dop-engine-v3: 1.4.9(patch_hash=d1a84f986792a3bfdcd4eae3cc78f887f798f326c534430eec7a80d6a4a42894)(bufferutil@4.0.9)(chai@5.3.3)(utf-8-validate@5.0.10)
       dop-sharedmodels-v3: 1.1.9(ethers@6.13.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       ethereum-cryptography: 2.2.1
       ethers: 6.13.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       events: 3.3.0
       graphql: 16.11.0
       memdown: 6.1.1
+      poseidon-lite: 0.3.0
       stream-browserify: 3.0.0
     transitivePeerDependencies:
       - '@graphql-tools/utils'
@@ -11588,6 +11631,8 @@ snapshots:
   pkg-dir@4.2.0:
     dependencies:
       find-up: 4.1.0
+
+  poseidon-lite@0.3.0: {}
 
   possible-typed-array-names@1.1.0: {}
 
