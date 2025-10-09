@@ -1,52 +1,159 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# DOP Wallet SDK Test App
+
+A focused React Native test application for testing **dop-wallet-v6** SDK functionality, spec## Notes
+
+- This is a focused testing app for wallet creation and mnemonic generation
+- The app includes comprehensive error handling and logging
+- All polyfills and React Native configurations are optimized for DOP SDK
+- Activity logs show detailed operation results for debugging
+
+## Troubleshooting
+
+If you encounter issues:
+1. Ensure all dependencies are installed: `pnpm install`
+2. For iOS, run: `cd ios && pod install && cd ..`
+3. Clear Metro cache: `pnpm start --reset-cache`
+4. Check that `../new-dop-wallet-v3` exists and is properly built
+
+---
+
+**Focus**: This app is specifically designed to test wallet creation and mnemonic generation from the dop-wallet-v6 SDK package located at `../new-dop-wallet-v3`.lly wallet creation and mnemonic generation capabilities from the `../new-dop-wallet-v3` package.
+
+## Purpose
+
+This app serves as a testing environment to verify that the dop-wallet-v6 SDK works correctly for:
+- ✅ **Wallet Creation**: Generate new DOP wallets
+- ✅ **Mnemonic Generation**: Create and handle mnemonic phrases
+- ✅ **SDK Integration**: Validate React Native compatibility
+
+## Core Features
+
+### � Wallet Functions
+- **Create New Wallet**: Generate new wallets with SDK
+- **Mnemonic Generation**: Create secure mnemonic phrases
+- **Wallet Import**: Import wallets from existing mnemonics
+- **Address Generation**: Generate DOP addresses
+
+### 🚀 SDK Integration
+- **Engine Initialization**: Proper DOP engine setup for React Native
+- **Error Handling**: Comprehensive error catching and feedback
+- **Real-time Logging**: Activity logs for all SDK operations
+
+## DOP SDK Functions Demonstrated
+
+The app showcases these key dop-wallet-v6 functions:
+
+```javascript
+import { 
+  startDopEngineReactNative, 
+  ArtifactStore, 
+  createOrImportDopWallet,
+  validateDopAddress,
+  getWalletTransactionHistory,
+  getEngine,
+  ProvedTransaction
+} from 'dop-wallet-v6';
+```
+
+### Key Integration Points
+1. **Engine Setup**: Proper configuration with ArtifactStore for React Native
+2. **Wallet Creation**: Both new wallet generation and mnemonic import
+3. **Address Validation**: Real-time DOP address validation
+4. **Error Handling**: Comprehensive error catching and user feedback
+5. **State Management**: React state integration with SDK operations
+
 
 # Getting Started
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Project Structure
 
-## Step 1: Start Metro
-
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
-yarn start
+```
+DopSdkTestApp/
+├── App.tsx                 # Main React Native app with DOP SDK integration
+├── index.js               # Entry point with polyfills and SDK setup
+├── package.json           # Dependencies including dop-wallet-v6
+├── android/               # Android build configuration
+├── ios/                   # iOS build configuration
+└── __tests__/             # Test files
 ```
 
-## Step 2: Build and run your app
+## Quick Start
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### Prerequisites
+- Node.js 20+
+- React Native development environment setup
+- pnpm package manager
 
-### Android
+### Installation & Setup
 
-```sh
-# Using npm
-npm run android
+1. **Install dependencies**:
+   ```sh
+   pnpm install
+   ```
 
-# OR using Yarn
-yarn android
+2. **iOS Setup** (if testing on iOS):
+   ```sh
+   cd ios && pod install && cd ..
+   ```
+
+3. **Start Metro bundler**:
+   ```sh
+   pnpm start
+   ```
+
+4. **Run the app**:
+   ```sh
+   # Android
+   pnpm run android
+   
+   # iOS  
+   pnpm run ios
+   ```
+
+## Testing DOP Wallet Functions
+
+The app provides a user interface to test:
+
+1. **Initialize DOP Engine** - Sets up the SDK environment
+2. **Create New Wallet** - Generates a new wallet with mnemonic
+3. **Import Wallet** - Import existing wallet from mnemonic phrase
+4. **View Wallet Details** - Display wallet address and information
+
+## SDK Integration Details
+
+```javascript
+// Key imports from dop-wallet-v6
+import { 
+  startDopEngineReactNative,
+  createOrImportDopWallet,
+  // ... other SDK functions
+} from 'dop-wallet-v6';
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+The SDK is imported from `../new-dop-wallet-v3` as specified in package.json:
+```json
+"dop-wallet-v6": "file:../new-dop-wallet-v3"
 ```
 
-Then, and every time you update your native dependencies, run:
+1. **Initialize Engine**: Tap "Initialize DOP Engine" to start the SDK
+2. **Create/Import Wallet**: Either create a new wallet or import using a mnemonic
+3. **Test Features**: Try various wallet operations like balance checking and transactions
+4. **Monitor Logs**: Check the activity logs for detailed operation results
+5. **Validate Addresses**: Test the address validation functionality
 
-```sh
-bundle exec pod install
-```
+### Key Files
+
+- `App.tsx`: Main app component with all DOP SDK integrations
+- `metro.config.js`: Metro configuration for proper bundling
+- `dop-shims.js`: Polyfills for DOP SDK compatibility
+- `package.json`: Dependencies including dop-wallet-v6
+
+### Notes
+
+- Some functions like balance checking and transaction history use demo data
+- The app demonstrates proper error handling and user feedback patterns
+- All SDK operations are logged for debugging purposes
+- The interface adapts to dark/light mode automatically
 
 For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
 
