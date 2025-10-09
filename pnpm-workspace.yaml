@@ -1,0 +1,2 @@
+patchedDependencies:
+  dop-engine-v3: patches/dop-engine-v3.patch

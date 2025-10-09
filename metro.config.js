@@ -25,13 +25,13 @@ const config = {
       'http': require.resolve('stream-http'),
       'https': require.resolve('https-browserify'),
       'zlib': require.resolve('browserify-zlib'),
-      
+
       // Disable modules that don't work in React Native
       'fs': false,
       'os': false,
       'leveldown': require.resolve('memdown'),
     },
-    
+
     extraNodeModules: {
       'crypto': require.resolve('crypto-browserify'),
       'stream': require.resolve('stream-browserify'),
@@ -57,21 +57,21 @@ const config = {
 
     // Source extensions
     sourceExts: [...defaultConfig.resolver.sourceExts, 'cjs', 'mjs'],
-    
+
     // Enable modern package exports resolution
     unstable_enablePackageExports: true,
     unstable_conditionNames: ['browser', 'require', 'react-native'],
-    
+
     // Resolver options
     resolverMainFields: ['react-native', 'browser', 'main'],
-    
+
     // Enable symlink resolution for local SDK development
     symlinks: true,
   },
-  
+
   // Watch the SDK directory if it's linked locally
   watchFolders: [__dirname, '../new-dop-wallet-v3'],
-  
+
   transformer: {
     minifierConfig: {
       keep_fnames: true,
