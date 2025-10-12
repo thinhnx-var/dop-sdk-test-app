@@ -56,7 +56,7 @@ const App = (props: Props) => {
   // 2.2 Initialize DOP Engine
   const initializeDopEngine = async () => {
     try {
-      console.log('🚀 Starting DOP Engine initialization...');
+      console.log('Starting DOP Engine initialization...');
 
       const walletSource = 'myapp'; // Your app identifier (max 16 chars)
       const shouldDebug = __DEV__;
@@ -106,13 +106,12 @@ const App = (props: Props) => {
   };
 
   const checkEngineWork = () => {
-    // const engine = getEngine();
-    // if (engine) {
-    //   console.log('Engine works', engine);
-    // } else {
-    //   console.log('Engine does not work');
-    // }
-    testNodeDerivation();
+    const engine = getEngine();
+    if (engine) {
+      console.log('Engine works', engine);
+    } else {
+      console.log('Engine does not work');
+    }
   };
 
   const handleCreateWallet = async () => {
