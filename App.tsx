@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView, Text, View, ScrollView } from 'react-native';
+import { SafeAreaView, Text, View, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { Spacer } from './Spacer';
 import { Button } from './Button';
 import {
@@ -43,8 +43,14 @@ const derivePathsForIndex = (index = 0) => {
   };
 };
 
-async function testNodeDerivation() {
-  console.log('Testing wallet node derivation...');
+async function testNodeDerivation(addLog?: (message: string, type?: 'info' | 'error' | 'success' | 'warning', data?: any) => void) {
+  const logFunction = addLog || console.log;
+  
+  if (addLog) {
+    addLog('Testing wallet node derivation...', 'info');
+  } else {
+    console.log('Testing wallet node derivation...');
+  }
 
   try {
     const privateKey = new Uint8Array([
@@ -54,15 +60,81 @@ async function testNodeDerivation() {
     ]);
 
     const publicViewingKey = await getPublicViewingKey(privateKey);
-    console.log({ publicViewingKey });
+    
+    if (addLog) {
+      addLog('Node derivation completed successfully', 'success', { 
+        privateKeyLength: privateKey.length,
+        publicViewingKeyLength: publicViewingKey.length
+      });
+    } else {
+      console.log({ publicViewingKey });
+    }
   } catch (error) {
-    console.error(error);
+    if (addLog) {
+      addLog('Node derivation failed', 'error', error);
+    } else {
+      console.error(error);
+    }
   }
 }
 
 type Props = {};
 
+// Log entry interface
+interface LogEntry {
+  id: string;
+  timestamp: string;
+  type: 'info' | 'error' | 'success' | 'warning';
+  message: string;
+  data?: any;
+}
+
 const App = (props: Props) => {
+  // Console log state for visual display
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [showLogs, setShowLogs] = useState<boolean>(true);
+  
+  // Helper function to add logs
+  const addLog = (message: string, type: 'info' | 'error' | 'success' | 'warning' = 'info', data?: any) => {
+    const logEntry: LogEntry = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      timestamp: new Date().toLocaleTimeString(),
+      type,
+      message,
+      data
+    };
+    
+    setLogs(prevLogs => [logEntry, ...prevLogs.slice(0, 49)]); // Keep last 50 logs
+    
+    // Still log to console for debugging
+    if (type === 'error') {
+      console.error(message, data);
+    } else {
+      console.log(message, data);
+    }
+    
+    // Show alert for errors
+    if (type === 'error') {
+      Alert.alert('Error', message, [{ text: 'OK' }]);
+    }
+  };
+
+  // Helper function to clear logs
+  const clearLogs = () => {
+    setLogs([]);
+    addLog('Logs cleared', 'info');
+  };
+
+  // Wrapper function for testNodeDerivation
+  const handleTestNodeDerivation = async () => {
+    await testNodeDerivation(addLog);
+  };
+
+  // Add initial welcome log
+  React.useEffect(() => {
+    addLog('DOP SDK Test App initialized', 'success');
+    addLog('Press buttons below to test different DOP SDK functions', 'info');
+  }, []);
   // State for wallet management testing
   const [currentWallet, setCurrentWallet] = useState<any>(null);
   const [walletMnemonic, setWalletMnemonic] = useState<string>('');
@@ -84,7 +156,7 @@ const App = (props: Props) => {
   // 2.2 Initialize DOP Engine
   const initializeDopEngine = async () => {
     try {
-      console.log('Starting DOP Engine initialization...');
+      addLog('Starting DOP Engine initialization...', 'info');
 
       const walletSource = 'myapp'; // Your app identifier (max 16 chars)
       const shouldDebug = __DEV__;
@@ -108,16 +180,16 @@ const App = (props: Props) => {
         databaseName,
       );
 
-      console.log('Initialized Done');
+      addLog('DOP Engine initialized successfully', 'success');
       return true;
     } catch (error) {
-      console.error('Initialized error:', error);
+      addLog('DOP Engine initialization failed', 'error', error);
       throw error;
     }
   };
 
   const handleStartEngine = async () => {
-    console.log('Start engine');
+    addLog('Starting engine...', 'info');
 
     // await startDopEngineReactNative(
     //   'dop', // walletSource (max 16 chars)  // Wallet state - simplified
@@ -129,23 +201,23 @@ const App = (props: Props) => {
     //   'DopTestAppDB', // databaseName  useEffect(() => {
     // );
     const status = await testCircomlibjs();
-    console.log('Circomlibjs status', status);
+    addLog('Circomlibjs status checked', 'success', status);
     initializeDopEngine();
   };
 
   const checkEngineWork = () => {
     const engine = getEngine();
     if (engine) {
-      console.log('Engine works', engine);
+      addLog('Engine is working properly', 'success', { engineExists: true });
     } else {
-      console.log('Engine does not work');
+      addLog('Engine is not working', 'error', { engineExists: false });
     }
   };
 
   const handleCreateWallet = async () => {
     const encryptionKey = getRandomBytes(32);
 
-    console.log({ encryptionKey });
+    addLog('Creating wallet...', 'info', { encryptionKeyLength: encryptionKey.length });
 
     const { walletInfo, mnemonic: generatedMnemonic } =
       await createOrImportDopWallet(encryptionKey, {
@@ -153,8 +225,12 @@ const App = (props: Props) => {
         mnemonicStrength: 128, // use 24 words (256) for maximum security
         timeout: 90000, // 90 seconds timeout for React Native
       });
-    console.log('Wallet created', walletInfo);
-    console.log('Mnemonic', generatedMnemonic);
+    
+    addLog('Wallet created successfully', 'success', { 
+      walletId: walletInfo.id,
+      dopAddress: walletInfo.dopAddress 
+    });
+    addLog('Mnemonic generated', 'info', { mnemonicWords: generatedMnemonic.split(' ').length });
     
     // Store wallet for further testing
     setCurrentWallet(walletInfo);
@@ -171,7 +247,7 @@ const App = (props: Props) => {
   // Test createDOPWallet function
   const handleCreateDOPWallet = async () => {
     try {
-      console.log('Testing createDOPWallet...');
+      addLog('Testing createDOPWallet...', 'info');
       const encryptionKey = getRandomBytes(32);
       
       // This uses the standard createOrImportDopWallet function
@@ -182,103 +258,127 @@ const App = (props: Props) => {
       
       setCurrentWallet(walletInfo);
       setWalletMnemonic(mnemonic);
-      console.log('DOP Wallet created:', walletInfo);
-      console.log('Mnemonic:', mnemonic);
+      addLog('DOP Wallet created successfully', 'success', { 
+        walletId: walletInfo.id,
+        dopAddress: walletInfo.dopAddress,
+        mnemonicWords: mnemonic.split(' ').length 
+      });
     } catch (error) {
-      console.error('createDOPWallet failed:', error);
+      addLog('createDOPWallet failed', 'error', error);
     }
   };
 
   // Test loadWalletByID function
   const handleLoadWalletByID = async () => {
     if (!currentWallet?.id) {
-      console.log('No wallet to load. Create a wallet first.');
+      addLog('No wallet to load. Create a wallet first.', 'warning');
       return;
     }
 
     try {
-      console.log('Testing loadWalletByID...');
+      addLog('Testing loadWalletByID...', 'info');
       const encryptionKey = getRandomBytes(32);
       
       const loadedWallet = await loadWalletByID(encryptionKey, currentWallet.id, false);
-      console.log('Wallet loaded:', loadedWallet);
+      addLog('Wallet loaded successfully', 'success', { walletId: loadedWallet.id });
     } catch (error) {
-      console.error('loadWalletByID failed:', error);
+      addLog('loadWalletByID failed', 'error', error);
     }
   };
 
   // Test getWalletShareableViewingKey function
   const handleGetShareableViewingKey = async () => {
     if (!currentWallet?.id) {
-      console.log('No wallet available. Create a wallet first.');
+      addLog('No wallet available. Create a wallet first.', 'warning');
       return;
     }
 
     try {
-      console.log('Testing getWalletShareableViewingKey...');
+      addLog('Testing getWalletShareableViewingKey...', 'info');
       
       const viewingKey = await getWalletShareableViewingKey(currentWallet.id);
       setShareableViewingKey(viewingKey);
-      console.log('Shareable viewing key:', viewingKey);
+      addLog('Shareable viewing key generated', 'success', { 
+        keyLength: viewingKey.length,
+        keyPreview: viewingKey.substring(0, 20) + '...'
+      });
     } catch (error) {
-      console.error('getWalletShareableViewingKey failed:', error);
+      addLog('getWalletShareableViewingKey failed', 'error', error);
     }
   };
 
   // Test createViewOnlyDOPWallet function
   const handleCreateViewOnlyWallet = async () => {
     if (!shareableViewingKey) {
-      console.log('No shareable viewing key. Generate one first.');
+      addLog('No shareable viewing key. Generate one first.', 'warning');
       return;
     }
 
     try {
-      console.log('Testing createViewOnlyDOPWallet...');
+      addLog('Testing createViewOnlyDOPWallet...', 'info');
       
       // createViewOnlyDopWallet typically needs additional parameters
       const encryptionKey = getRandomBytes(32);
       const viewOnlyWallet = await createViewOnlyDopWallet(encryptionKey, shareableViewingKey, {});
-      console.log('View-only wallet created:', viewOnlyWallet);
+      addLog('View-only wallet created successfully', 'success', { 
+        walletId: viewOnlyWallet.id,
+        walletType: 'view-only' 
+      });
     } catch (error) {
-      console.error('createViewOnlyDOPWallet failed:', error);
+      addLog('createViewOnlyDOPWallet failed', 'error', error);
     }
   };
 
   // Test generate_mnemonic function
   const handleGenerateMnemonic = async () => {
     try {
+        addLog('Testing mnemonic generation...', 'info');
         const encryptionKey = getRandomBytes(32);
         const { walletInfo, mnemonic } = await createOrImportDopWallet(encryptionKey, {
           mnemonicStrength: 256, // 24 words (default: 128 = 12 words)
           timeout: 90000 // Recommended for React Native
         });
-        console.log('Generated mnemonic:', mnemonic);
+        addLog('Mnemonic generated successfully', 'success', { 
+          mnemonicWords: mnemonic.split(' ').length,
+          walletId: walletInfo.id,
+          firstThreeWords: mnemonic.split(' ').slice(0, 3).join(' ') + '...'
+        });
     } catch (error) {
-      console.error('Mnemonic generation failed:', error);
+      addLog('Mnemonic generation failed', 'error', error);
     }
   };
 
   // Test get_wallet_mnemonic function
   const handleGetWalletMnemonic = async () => {
     if (!currentWallet?.id) {
-      console.log('No wallet available. Create a wallet first.');
+      addLog('No wallet available. Create a wallet first.', 'warning');
       return;
     }
 
     try {
-      console.log('Testing getWalletMnemonic...');
+      addLog('Testing getWalletMnemonic...', 'info');
       const encryptionKey = getRandomBytes(32);
         const { walletInfo, mnemonic } = await createOrImportDopWallet(encryptionKey, {
           mnemonicStrength: 256, // 24 words (default: 128 = 12 words)
           timeout: 90000 // Recommended for React Native
         });
-        console.log('Generated mnemonic in test getting:', mnemonic);
+        addLog('Generated test wallet for mnemonic retrieval', 'info', { 
+          walletId: walletInfo.id,
+          mnemonicWords: mnemonic.split(' ').length 
+        });
       
       const retrievedMnemonic = await getWalletMnemonic(encryptionKey, walletInfo.id);
-      console.log('Retrieved wallet mnemonic:', retrievedMnemonic);
+      addLog('Wallet mnemonic retrieved successfully', 'success', { 
+        retrievedWords: retrievedMnemonic.split(' ').length,
+        firstThreeWords: retrievedMnemonic.split(' ').slice(0, 3).join(' ') + '...'
+      });
     } catch (error) {
-      console.error('getWalletMnemonic failed:', error);
-      console.log('Current stored mnemonic:', walletMnemonic);
+      addLog('getWalletMnemonic failed', 'error', error);
+      if (walletMnemonic) {
+        addLog('Fallback: Current stored mnemonic available', 'info', { 
+          storedWords: walletMnemonic.split(' ').length 
+        });
+      }
     }
   };
 
@@ -287,38 +387,46 @@ const App = (props: Props) => {
   // Test pbkdf2 function
   const handleTestPbkdf2 = async () => {
     try {
-      console.log('Testing pbkdf2...');
+      addLog('Testing pbkdf2...', 'info');
       const password = 'test-password-123';
       const salt = getRandomBytes(32);
       const iterations = 100000;
       
       const derivedKey = await pbkdf2(password, salt, iterations);
-      console.log('PBKDF2 derived key length:', derivedKey.length);
-      console.log('PBKDF2 derived key (first 10 bytes):', Array.from(derivedKey.slice(0, 10)));
+      addLog('PBKDF2 key derivation successful', 'success', {
+        derivedKeyLength: derivedKey.length,
+        iterations: iterations,
+        firstTenBytes: Array.from(derivedKey.slice(0, 10))
+      });
     } catch (error) {
-      console.error('pbkdf2 failed:', error);
+      addLog('pbkdf2 failed', 'error', error);
     }
   };
 
   // Test getRandomBytes function
   const handleTestGetRandomBytes = async () => {
     try {
-      console.log('Testing getRandomBytes...');
+      addLog('Testing getRandomBytes...', 'info');
       const randomBytes32 = getRandomBytes(32);
       const randomBytes16 = getRandomBytes(16);
       
-      setRandomBytesResult(`32 bytes: ${Array.from(randomBytes32.slice(0, 8)).join(', ')}... | 16 bytes: ${Array.from(randomBytes16).join(', ')}`);
-      console.log('Random 32 bytes:', Array.from(randomBytes32));
-      console.log('Random 16 bytes:', Array.from(randomBytes16));
+      const resultText = `32 bytes: ${Array.from(randomBytes32.slice(0, 8)).join(', ')}... | 16 bytes: ${Array.from(randomBytes16).join(', ')}`;
+      setRandomBytesResult(resultText);
+      addLog('Random bytes generated successfully', 'success', {
+        bytes32Length: randomBytes32.length,
+        bytes16Length: randomBytes16.length,
+        sample32: Array.from(randomBytes32.slice(0, 8)),
+        full16: Array.from(randomBytes16)
+      });
     } catch (error) {
-      console.error('getRandomBytes failed:', error);
+      addLog('getRandomBytes failed', 'error', error);
     }
   };
 
   // Test hashPasswordString function (fallback implementation)
   const handleTestHashPassword = async () => {
     try {
-      console.log('Testing password hashing...');
+      addLog('Testing password hashing...', 'info');
       const password = testPassword;
       
       // Since hashPasswordString might not be available, use crypto or a fallback
@@ -329,68 +437,76 @@ const App = (props: Props) => {
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       
       setHashedPassword(hashHex);
-      console.log('Password hash (SHA-256):', hashHex);
+      addLog('Password hashed successfully (SHA-256)', 'success', {
+        passwordLength: password.length,
+        hashLength: hashHex.length,
+        hashPreview: hashHex.substring(0, 20) + '...'
+      });
     } catch (error) {
-      console.error('Password hashing failed:', error);
+      addLog('Password hashing failed', 'error', error);
     }
   };
 
   // Test setEncryptionKeyFromPassword function (simulation)
   const handleTestSetEncryptionKeyFromPassword = async () => {
     try {
-      console.log('Testing encryption key derivation from password...');
+      addLog('Testing encryption key derivation from password...', 'info');
       const password = testPassword;
       const salt = getRandomBytes(32);
       
       // Use pbkdf2 to derive encryption key from password
       const encryptionKey = await pbkdf2(password, salt, 100000);
-      const keyHex = Array.from(encryptionKey).map(b => b.toString(16).padStart(2, '0')).join('');
+      const keyHex = Buffer.from(encryptionKey).toString('hex');
       
       setEncryptionKeyFromPassword(keyHex);
-      console.log('Encryption key derived from password:', keyHex);
+      addLog('Encryption key derived from password successfully', 'success', {
+        keyLength: keyHex.length,
+        keyPreview: keyHex.substring(0, 20) + '...'
+      });
     } catch (error) {
-      console.error('Encryption key derivation failed:', error);
+      addLog('Encryption key derivation failed', 'error', error);
     }
   };
 
   // Test getEncryptionKeyFromPassword function (simulation)
   const handleTestGetEncryptionKeyFromPassword = async () => {
     try {
-      console.log('Testing get encryption key from password...');
+      addLog('Testing get encryption key from password...', 'info');
       if (!encryptionKeyFromPassword) {
-        console.log('No encryption key available. Generate one first.');
+        addLog('No encryption key available. Generate one first.', 'warning');
         return;
       }
       
-      console.log('Retrieved encryption key:', encryptionKeyFromPassword.substring(0, 20) + '...');
-      console.log('Key length:', encryptionKeyFromPassword.length, 'characters');
+      addLog('Encryption key retrieved successfully', 'success', {
+        keyPreview: encryptionKeyFromPassword.substring(0, 20) + '...',
+        keyLength: encryptionKeyFromPassword.length,
+        keyType: 'derived-from-password'
+      });
     } catch (error) {
-      console.error('Get encryption key failed:', error);
+      addLog('Get encryption key failed', 'error', error);
     }
   };
 
   // Test getEncryptionPrivateKeySignatureMessage function (simulation)
   const handleTestEncryptionSignatureMessage = async () => {
     try {
-      console.log('Testing encryption private key signature message...');
+      addLog('Testing encryption private key signature message...', 'info');
       const message = 'Test message for signature';
       const privateKeyBytes = getRandomBytes(32);
       
-      // Simulate signature message generation
-      const encoder = new TextEncoder();
-      const messageBytes = encoder.encode(message);
-      const combinedData = new Uint8Array(privateKeyBytes.length + messageBytes.length);
-      combinedData.set(privateKeyBytes);
-      combinedData.set(messageBytes, privateKeyBytes.length);
+      // Simulate signature message generation - simple approach
+      const messageHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
+      const hashArray = Array.from(new Uint8Array(messageHash));
+      const signatureHex = Buffer.from(hashArray).toString('hex');
       
-      const signatureHash = await crypto.subtle.digest('SHA-256', combinedData);
-      const signatureArray = Array.from(new Uint8Array(signatureHash));
-      const signatureHex = signatureArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      
-      console.log('Message:', message);
-      console.log('Signature message hash:', signatureHex);
+      addLog('Encryption signature message generated', 'success', {
+        message: message,
+        signatureHashPreview: signatureHex.substring(0, 20) + '...',
+        signatureLength: signatureHex.length,
+        privateKeyType: typeof privateKeyBytes
+      });
     } catch (error) {
-      console.error('Encryption signature message failed:', error);
+      addLog('Encryption signature message failed', 'error', error);
     }
   };
 
@@ -399,49 +515,51 @@ const App = (props: Props) => {
   // Test setOnUTXOMerkletreeScanCallback function
   const handleSetUTXOScanCallback = async () => {
     try {
-      console.log('Testing setOnUTXOMerkletreeScanCallback...');
+      addLog('Testing setOnUTXOMerkletreeScanCallback...', 'info');
       
       const callback = (progress: any) => {
-        console.log('UTXO Merkletree scan progress:', progress);
-        setScanProgress(`UTXO Scan: ${JSON.stringify(progress)}`);
+        const progressMessage = `UTXO Scan: ${JSON.stringify(progress)}`;
+        addLog('UTXO Merkletree scan progress update', 'info', progress);
+        setScanProgress(progressMessage);
       };
       
       setOnUTXOMerkletreeScanCallback(callback);
-      console.log('UTXO scan callback set successfully');
+      addLog('UTXO scan callback set successfully', 'success');
     } catch (error) {
-      console.error('setOnUTXOMerkletreeScanCallback failed:', error);
+      addLog('setOnUTXOMerkletreeScanCallback failed', 'error', error);
     }
   };
 
   // Test setOnTXIDMerkletreeScanCallback function
   const handleSetTXIDScanCallback = async () => {
     try {
-      console.log('Testing setOnTXIDMerkletreeScanCallback...');
+      addLog('Testing setOnTXIDMerkletreeScanCallback...', 'info');
       
       const callback = (progress: any) => {
-        console.log('TXID Merkletree scan progress:', progress);
-        setScanProgress(`TXID Scan: ${JSON.stringify(progress)}`);
+        const progressMessage = `TXID Scan: ${JSON.stringify(progress)}`;
+        addLog('TXID Merkletree scan progress update', 'info', progress);
+        setScanProgress(progressMessage);
       };
       
       setOnTXIDMerkletreeScanCallback(callback);
-      console.log('TXID scan callback set successfully');
+      addLog('TXID scan callback set successfully', 'success');
     } catch (error) {
-      console.error('setOnTXIDMerkletreeScanCallback failed:', error);
+      addLog('setOnTXIDMerkletreeScanCallback failed', 'error', error);
     }
   };
 
   // Test resetFullTXIDMerkletreesV2 function
   const handleResetTXIDMerkletrees = async () => {
     try {
-      console.log('Testing resetFullTXIDMerkletreesV2...');
+      addLog('Testing resetFullTXIDMerkletreesV2...', 'info');
       
       // Use object format for Chain type
       const chain = { type: 0, id: 1 }; // Ethereum mainnet
       await resetFullTXIDMerkletreesV2(chain);
       setMerkletreeResetResult('TXID merkletrees reset successfully');
-      console.log('TXID merkletrees reset completed');
+      addLog('TXID merkletrees reset completed', 'success');
     } catch (error) {
-      console.error('resetFullTXIDMerkletreesV2 failed:', error);
+      addLog('resetFullTXIDMerkletreesV2 failed', 'error', error);
       setMerkletreeResetResult('TXID merkletrees reset failed');
     }
   };
@@ -449,15 +567,15 @@ const App = (props: Props) => {
   // Test refreshBalances function
   const handleRefreshBalances = async () => {
     try {
-      console.log('Testing refreshBalances...');
+      addLog('Testing refreshBalances...', 'info');
       
       const chain = { type: 0, id: 1 }; // Ethereum mainnet
-      const walletFilter = []; // Empty filter for all wallets
+      const walletFilter: string[] = []; // Empty filter for all wallets
       await refreshBalances(chain, walletFilter);
       setBalanceRefreshResult('Balances refreshed successfully');
-      console.log('Balances refreshed successfully');
+      addLog('Balances refreshed successfully', 'success');
     } catch (error) {
-      console.error('refreshBalances failed:', error);
+      addLog('refreshBalances failed', 'error', error);
       setBalanceRefreshResult('Balance refresh failed');
     }
   };
@@ -465,27 +583,153 @@ const App = (props: Props) => {
   // Test rescanFullUTXOMerkletreesAndWallets function
   const handleRescanUTXOMerkletreesAndWallets = async () => {
     try {
-      console.log('Testing rescanFullUTXOMerkletreesAndWallets...');
+      addLog('Testing rescanFullUTXOMerkletreesAndWallets...', 'info');
       setScanProgress('Starting full UTXO merkletrees and wallets rescan...');
       
       const chain = { type: 0, id: 1 }; // Ethereum mainnet
-      const walletFilter = []; // Empty filter for all wallets
+      const walletFilter: string[] = []; // Empty filter for all wallets
       await rescanFullUTXOMerkletreesAndWallets(chain, walletFilter);
       setScanProgress('Full UTXO merkletrees and wallets rescan completed');
-      console.log('Full UTXO merkletrees and wallets rescan completed');
+      addLog('Full UTXO merkletrees and wallets rescan completed', 'success');
     } catch (error) {
-      console.error('rescanFullUTXOMerkletreesAndWallets failed:', error);
+      addLog('rescanFullUTXOMerkletreesAndWallets failed', 'error', error);
       setScanProgress('Full UTXO merkletrees and wallets rescan failed');
     }
   };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      {/* Fixed Console Log Display at the top */}
+      <View style={{ 
+        backgroundColor: '#1a1a1a', 
+        borderBottomWidth: 2,
+        borderBottomColor: '#333',
+        maxHeight: 350,
+        minHeight: 200
+      }}>
+        <View style={{ 
+          flexDirection: 'row', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          backgroundColor: '#333',
+          padding: 15
+        }}>
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>Console Output</Text>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity 
+              onPress={() => setShowLogs(!showLogs)}
+              style={{ 
+                backgroundColor: '#555', 
+                paddingHorizontal: 12, 
+                paddingVertical: 6, 
+                borderRadius: 4, 
+                marginRight: 8 
+              }}
+            >
+              <Text style={{ color: 'white', fontSize: 12 }}>
+                {showLogs ? 'Hide' : 'Show'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={clearLogs}
+              style={{ 
+                backgroundColor: '#d32f2f', 
+                paddingHorizontal: 12, 
+                paddingVertical: 6, 
+                borderRadius: 4 
+              }}
+            >
+              <Text style={{ color: 'white', fontSize: 12 }}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        
+        {showLogs && (
+          <ScrollView 
+            style={{ flex: 1, padding: 15 }}
+            nestedScrollEnabled={true}
+          >
+            {logs.length === 0 ? (
+              <Text style={{ color: '#888', fontStyle: 'italic' }}>
+                No logs yet. Press a button to start testing!
+              </Text>
+            ) : (
+              logs.map((log) => (
+                <View key={log.id} style={{ marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                    <Text style={{ 
+                      color: log.type === 'error' ? '#f44336' : 
+                             log.type === 'success' ? '#4caf50' : 
+                             log.type === 'warning' ? '#ff9800' : '#2196f3',
+                      fontSize: 10,
+                      marginRight: 8
+                    }}>
+                      [{log.type.toUpperCase()}]
+                    </Text>
+                    <Text style={{ color: '#888', fontSize: 10 }}>
+                      {log.timestamp}
+                    </Text>
+                  </View>
+                  <Text style={{ 
+                    color: 'white', 
+                    fontSize: 12,
+                    marginBottom: 4
+                  }}>
+                    {log.message}
+                  </Text>
+                  {log.data && (
+                    <Text style={{ 
+                      color: '#aaa', 
+                      fontSize: 10,
+                      fontFamily: 'monospace',
+                      backgroundColor: '#222',
+                      padding: 8,
+                      borderRadius: 4
+                    }}>
+                      {typeof log.data === 'object' ? JSON.stringify(log.data, null, 2) : String(log.data)}
+                    </Text>
+                  )}
+                </View>
+              ))
+            )}
+          </ScrollView>
+        )}
+      </View>
+
+      {/* Scrollable content area below console */}
       <ScrollView 
         style={{ flex: 1 }} 
         contentContainerStyle={{ padding: 20, paddingBottom: 50 }}
         showsVerticalScrollIndicator={true}
       >
+        <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
+          DOP SDK Test App
+        </Text>
+
+        {/* Status Summary */}
+        <View style={{ 
+          backgroundColor: '#f5f5f5', 
+          borderRadius: 8, 
+          padding: 15,
+          marginBottom: 20 
+        }}>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>
+            Quick Status Summary
+          </Text>
+          <Text style={{ marginBottom: 5 }}>
+            💼 Wallet: {currentWallet ? `✅ Created (${currentWallet.id.substring(0, 8)}...)` : '❌ Not Created'}
+          </Text>
+          <Text style={{ marginBottom: 5 }}>
+            🔑 Viewing Key: {shareableViewingKey ? '✅ Generated' : '❌ Not Generated'}
+          </Text>
+          <Text style={{ marginBottom: 5 }}>
+            📝 Mnemonic: {walletMnemonic ? `✅ Available (${walletMnemonic.split(' ').length} words)` : '❌ Not Available'}
+          </Text>
+          <Text>
+            📊 Total Test Logs: {logs.length}
+          </Text>
+        </View>
+
         <Text>Hello World</Text>
 
         <Spacer height={50} />
@@ -497,6 +741,11 @@ const App = (props: Props) => {
 
       <Button onPress={checkEngineWork}>
         <Text style={{ color: 'white' }}>Check engine work</Text>
+      </Button>
+      <Spacer height={20} />
+
+      <Button onPress={handleTestNodeDerivation}>
+        <Text style={{ color: 'white' }}>Test Node Derivation</Text>
       </Button>
       <Spacer height={50} />
 
