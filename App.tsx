@@ -717,16 +717,16 @@ const App = (props: Props) => {
             Quick Status Summary
           </Text>
           <Text style={{ marginBottom: 5 }}>
-            💼 Wallet: {currentWallet ? `✅ Created (${currentWallet.id.substring(0, 8)}...)` : '❌ Not Created'}
+            Wallet: {currentWallet ? `Created (${currentWallet.id.substring(0, 8)}...)` : 'Not Created'}
           </Text>
           <Text style={{ marginBottom: 5 }}>
-            🔑 Viewing Key: {shareableViewingKey ? '✅ Generated' : '❌ Not Generated'}
+            Viewing Key: {shareableViewingKey ? 'Generated' : 'Not Generated'}
           </Text>
           <Text style={{ marginBottom: 5 }}>
-            📝 Mnemonic: {walletMnemonic ? `✅ Available (${walletMnemonic.split(' ').length} words)` : '❌ Not Available'}
+            Mnemonic: {walletMnemonic ? `Available (${walletMnemonic.split(' ').length} words)` : 'Not Available'}
           </Text>
           <Text>
-            📊 Total Test Logs: {logs.length}
+            Total Test Logs: {logs.length}
           </Text>
         </View>
 
